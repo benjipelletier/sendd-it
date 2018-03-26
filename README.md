@@ -1,2 +1,2 @@
 # sendd-it
-Sendd.it - playback, feedback.
+Sendd.it - Playback, feedback.
