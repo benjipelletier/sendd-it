@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Sendd.it</title>
+</head>
+<style type="text/css">
+body,
+html {
+  padding: 0;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue",Helvetica,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","微软雅黑", Arial, sans-serif;
+}
+body * {
+  transition: all 0.2s;
+}
+nav {
+  width: 90%;
+  margin: 2em auto;
+  display: flex;
+  position: relative;
+}
+.nav-brand {
+  color: #646464;
+}
+.nav-brand img {
+  width: 100px;
+  margin-right: 1em;
+}
+.nav-menu {
+  position: absolute;
+  right: 0;
+  top: -5px;
+  background-color: #E6E6E6;
+  padding: 10px 15px;
+  border-radius: 5px;
+  color: #505050;
+}
+.nav-menu div {
+  display: inline-block;
+  color: #959595;
+}
+.nav-menu div:first-child {
+  padding-right: 0.5em;
+  border-right: 1px solid #959595;
+}
+.nav-menu div:last-child {
+  padding-left: 0.4em;
+}
+.nav-menu div:hover {
+  color: #353535;
+  cursor: pointer;
+}
+
+section {
+  width: 100%;
+  position: relative;
+  height: 80vh;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.main {
+  /*position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);*/
+  color: #81A2C8;
+  font-size: 2em;
+  text-align: center;
+  padding: auto 30px;
+}
+.main img {
+  width: 120px;
+  display: block;
+  margin: auto;
+}
+.overlay {
+  background: #9ECAFF;
+  opacity: 0.5;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  visibility: hidden;
+}
+</style>
+  <body>
+    <nav>
+      <div class="nav-brand"><img src="logo.png">Playback, feedback.</div>
+      <div class="nav-menu">
+        <div>Help</div>
+        <div>About Us</div>
+      </div>
+    </nav>
+    <section ondrop="drop_handler(event);" ondragover="dragover_handler(event);" ondragleave="dragleave_handler(event);">
+      <div class="overlay" id="overlay"></div>
+      <div class="main">
+        <img src="upload.png">
+        <p id="upload-text">Drop your audio mix, <br>share with those who matter. </p>
+      </div>
+    </section>
+    <script type="text/javascript">
+      function dragover_handler(ev) {
+        console.log("drag over");
+        ev.preventDefault();
+        // Set the dropEffect to move
+        ev.dataTransfer.dropEffect = "move";
+        document.getElementById('upload-text').innerHTML="Release to drop file...<br><br>";
+      }
+      function drop_handler(ev) {
+        console.log("drop");
+       ev.preventDefault();
+       // Get the id of the target and add the moved element to the target's DOM
+       var data = ev.dataTransfer.getData("text");
+       document.getElementById('upload-text').innerHTML="Track uploading<br><br>";
+      }
+      function dragleave_handler(ev) {
+        document.getElementById('upload-text').innerHTML="Drop your audio mix, <br>share with those who matter.";
+      }
+    </script>
+  </body>
+</html>
+
