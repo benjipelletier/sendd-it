@@ -1,2 +1,4 @@
-# sendd-it
-Sendd.it - Playback, feedback.
+## Sendd.it - Playback, feedback.
+
+A drop & go audio sharing site for instant playback and feedback, built for musicians.
+
