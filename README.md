@@ -1,4 +1,3 @@
 ## Sendd.it - Playback, feedback.
 
-A drop & go audio sharing site for instant playback and feedback, built for musicians.
-
+A no-signup drop & go audio sharing solution for instant playback and feedback, built for musicians.
