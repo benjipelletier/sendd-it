@@ -1,0 +1,18 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "Server files for sendd-it application",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository" :
+  { "type" : "git"
+  , "url" : "https://github.com/benjipelletier/sendd-it"
+  },
+  "author": "Keith Chen, Benjamin Pelletier",
+  "license": "ISC",
+  "dependencies": {
+    "require": "^2.4.20"
+  }
+}
