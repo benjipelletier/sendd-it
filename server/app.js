@@ -1,16 +1,15 @@
-const firebase = require('firebase');
-const config = require('./keys.json');
-const request = require('request');
-
+const firebase = require('firebase')
+const config = require('./keys.json')
+const request = require('request')
 
 firebase.initializeApp(config)
 const firebaseApp = firebase.app()
-const database = firebase.database();
+const database = firebase.database()
 
 firebaseApp.auth().signInAnonymously().then(() => {
     database.ref('/comments/').once('value').then((data) => {
         console.log("Data: " + JSON.stringify(data.val()));
-    }).catch();
+    }).catch()
 
     // database.ref('/comments').push({ //returns id
     //     author: "gracfehop",
