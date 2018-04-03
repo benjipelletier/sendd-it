@@ -22,7 +22,6 @@ app.post('/tracks', (req, res) => {
 })
 
 app.get('/tracks/:id', (req, res) => {
-
 	admin.database().ref(`/tracks/${req.params.id}`).once('value').then((snap) => {
 		res.send(snap.val())
 	}).catch((err) => {
