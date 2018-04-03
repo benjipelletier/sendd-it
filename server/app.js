@@ -1,5 +1,6 @@
 const firebase = require('firebase')
 const express = require('express')
+const functions = require('firebase-functions')
 
 const config = require('./keys.json')
 
@@ -14,6 +15,9 @@ var courses = [1, 2, 3]
 app.get('/test:id', (req, res) => {
     res.send(courses)
 })
+
+// configure app here, add routes, whatever
+exports.api = functions.https.onRequest(app)
 
 // firebaseApp.auth().signInAnonymously().then(() => {
 //     // database.ref('/comments').push({ //returns id
