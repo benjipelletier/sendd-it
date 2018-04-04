@@ -2,7 +2,7 @@ const express = require('express')
 const functions = require('firebase-functions')
 const admin = require('firebase-admin');
 
-admin.initializeApp(functions.config().firebase);
+admin.initializeApp();
 
 //const config = require('./keys.json')
 
@@ -23,32 +23,55 @@ app.post('/tracks', (req, res) => {
 
 app.get('/tracks/:id', (req, res) => {
 	admin.database().ref(`/tracks/${req.params.id}`).once('value').then((snap) => {
-		res.send(snap.val())
+		res.send({
+			code: 200,
+			body: snap.val()
+		})
 	}).catch((err) => {
-		res.send(err)
+		res.send({
+			code: 404,
+			body: {error: "Not Found"}
+		});
 	})
 })
 
 app.get('/comments/:id', (req, res) => {
 	admin.database().ref(`/comments/${req.params.id}`).once('value').then((snap) => {
-		res.send(snap)
+		if (!snap.val()) {
+			res.send({
+				code: 404,
+				body: {error: "Not Found"}
+			});
+			return;
+		}
+		res.send({
+			code: 200,
+			body: snap.val()
+		})
 	}).catch((err) => {
-		res.send(err)
+		res.send({
+			code: 404,
+			body: {error: "Not Found"}
+		});
 	})
 })
 
 app.post('/comments/:id', (req, res) => {
-	admin.database().ref(`/comments/${req.params.id}/status`).once('value').then((snap) => {
-		var index;
-		if (snap.val() === "null") index = 0
-		else if(snap.val() || snap.val() === 0) index = parseInt(snap.val()) + 1
-		else {
-			res.send({error: `POST comments/${req.params.id} permission denied`})
-			return;
-		}
-		res.send('Success')
-		admin.database().ref(`/comments/${req.params.id}`).update({status: index})
-		admin.database().ref(`/comments/${req.params.id}/${index}`).set('somedata')
+	admin.database().ref(`/comments/${req.params.id}`).once('value').then((snap) => {
+		var index = (snap.val().status === "null") ? 0 : snap.numChildren()
+
+		if (snap.val().status) admin.database().ref(`/comments/${req.params.id}/status`).remove();
+		admin.database().ref(`/comments/${req.params.id}/${index}`).set({
+			name: req.query.name || 'default',
+			body: req.query.body || 'default',
+			timestamp: req.query.timestamp || 'default'
+		})
+		res.send({code: 200, body: {}})
+	}).catch((err) => {
+		res.send({
+			code: 404,
+			body: {error: "Not Found"}
+		});
 	})
 })
 
