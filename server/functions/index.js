@@ -8,19 +8,6 @@ admin.initializeApp();
 
 const app = express();
 
-
-app.post('/tracks', (req, res) => {
-	const date = new Date()
-	const timestamp = `${date.getMonth()}/${date.getDay()}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}`;
-	const key = admin.database().ref('/tracks').push(
-		{title: req.query.title,
-		 timestamp,
-		 passcode: 'XXXX'}
-	).getKey()
-	admin.database().ref(`/comments/${key}`).set({status: 'null'})
-	res.send('SUCCESS')
-})
-
 app.get('/tracks/:id', (req, res) => {
 	admin.database().ref(`/tracks/${req.params.id}`).once('value').then((snap) => {
 		res.send({
@@ -72,6 +59,21 @@ app.post('/comments/:id', (req, res) => {
 			code: 404,
 			body: {error: "Not Found"}
 		});
+	})
+})
+
+app.post('/tracks', (req, res) => {
+	const date = new Date()
+	const timestamp = `${date.getMonth()}/${date.getDay()}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}`;
+	const key = admin.database().ref('/tracks').push(
+		{title: req.query.title,
+		 timestamp,
+		 passcode: 'XXXX'}
+	).getKey()
+	admin.database().ref(`/comments/${key}`).set({status: 'null'})
+	res.send({
+		code: 200,
+		body: {}
 	})
 })
 

@@ -66,12 +66,7 @@ or
 ```js
 {
     code: 200,
-    body: {
-        id: [alphanumeric]
-        passcode: [numeric],
-        timestamp: [alphanumeric],
-        title: [alphanumeric|alphabetical]
-    }
+    body: {}
 }
 ```
 ---
