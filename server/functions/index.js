@@ -49,9 +49,9 @@ app.post('/comments/:id', (req, res) => {
 
 		if (snap.val().status) admin.database().ref(`/comments/${req.params.id}/status`).remove();
 		admin.database().ref(`/comments/${req.params.id}/${index}`).set({
-			name: req.query.name || 'default',
-			body: req.query.body || 'default',
-			timestamp: req.query.timestamp || 'default'
+			name: req.body.name || 'default',
+			body: req.body.body || 'default',
+			timestamp: req.body.timestamp || 'default'
 		})
 		res.send({code: 200, body: {}})
 	}).catch((err) => {
@@ -66,7 +66,7 @@ app.post('/tracks', (req, res) => {
 	const date = new Date()
 	const timestamp = `${date.getMonth()}/${date.getDay()}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}`;
 	const key = admin.database().ref('/tracks').push(
-		{title: req.query.title,
+		{title: req.body.title,
 		 timestamp,
 		 passcode: 'XXXX'}
 	).getKey()

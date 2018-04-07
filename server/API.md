@@ -1,6 +1,10 @@
 # Sendd-it REST API Endpoint documentation
+Request URL: `https://us-central1-sendd-it.cloudfunctions.net/api`
 
-**`GET /tracks/:id`**
+
+## Get Track by ID
+
+ **`GET /tracks/:id`** 
 
 **Required:** 
     
@@ -18,7 +22,11 @@
 }
 ```
 ---
-**`GET /comments/:id`**
+## Get Comment Tree by Track ID
+
+ **`GET /comments/:id`**
+
+
 
 **Required:** 
     
@@ -54,6 +62,7 @@ or
 }
 ```
 ---
+## Upload Track
 
 **`POST /tracks`**
 
@@ -70,7 +79,9 @@ or
 }
 ```
 ---
-**`POST /commends/:id`**
+## Upload Comment
+
+**`POST /comments/:id`**
 
 **Required:** 
     
