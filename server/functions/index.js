@@ -2,18 +2,38 @@ const express = require('express')
 const functions = require('firebase-functions')
 const admin = require('firebase-admin');
 
-admin.initializeApp();
+const serviceAccount = require("./serviceAccountKey.json")
 
-//const config = require('./keys.json')
+admin.initializeApp({
+	credential: admin.credential.cert(serviceAccount),
+    storageBucket: "sendd-it.appspot.com"
+});
 
 const app = express();
 
+app.use((req, res, next) => {
+	console.log('Server invoked');
+	next();
+})
+
+app.get('/file', (req, res) => {
+	const storageRef = admin.storage().bucket()
+	var message = '5b6p5Y+344GX44G+44GX44Gf77yB44GK44KB44Gn44Go44GG77yB';
+	storageRef.upload('./index.js').then((snap) => {
+		res.send('SUCCESS')
+	  })
+})
+
 app.get('/tracks/:id', (req, res) => {
 	admin.database().ref(`/tracks/${req.params.id}`).once('value').then((snap) => {
-		res.send({
-			code: 200,
-			body: snap.val()
-		})
+		if (snap.val()) {
+			res.send({
+				code: 200,
+				body: snap.val()
+			})
+		} else {
+			throw new Error()
+		}
 	}).catch((err) => {
 		res.send({
 			code: 404,
@@ -24,17 +44,14 @@ app.get('/tracks/:id', (req, res) => {
 
 app.get('/comments/:id', (req, res) => {
 	admin.database().ref(`/comments/${req.params.id}`).once('value').then((snap) => {
-		if (!snap.val()) {
+		if (snap.val()) {
 			res.send({
-				code: 404,
-				body: {error: "Not Found"}
-			});
-			return;
+				code: 200,
+				body: snap.val()
+			})
+		} else {
+			throw new Error()
 		}
-		res.send({
-			code: 200,
-			body: snap.val()
-		})
 	}).catch((err) => {
 		res.send({
 			code: 404,
@@ -49,9 +66,9 @@ app.post('/comments/:id', (req, res) => {
 
 		if (snap.val().status) admin.database().ref(`/comments/${req.params.id}/status`).remove();
 		admin.database().ref(`/comments/${req.params.id}/${index}`).set({
-			name: req.body.name || 'default',
-			body: req.body.body || 'default',
-			timestamp: req.body.timestamp || 'default'
+			name: req.query.name || 'default',
+			body: req.query.body || 'default',
+			timestamp: req.query.timestamp || 'default'
 		})
 		res.send({code: 200, body: {}})
 	}).catch((err) => {
@@ -66,7 +83,7 @@ app.post('/tracks', (req, res) => {
 	const date = new Date()
 	const timestamp = `${date.getMonth()}/${date.getDay()}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}`;
 	const key = admin.database().ref('/tracks').push(
-		{title: req.body.title,
+		{title: req.query.title,
 		 timestamp,
 		 passcode: 'XXXX'}
 	).getKey()
