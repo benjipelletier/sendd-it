@@ -1,7 +1,7 @@
 const express = require('express')
 const functions = require('firebase-functions')
 const admin = require('firebase-admin');
-
+ 
 const serviceAccount = require("./serviceAccountKey.json")
 
 admin.initializeApp({
@@ -12,7 +12,7 @@ admin.initializeApp({
 const app = express();
 
 app.use((req, res, next) => {
-	console.log('Server invoked');
+	console.log('Server invoked, middleware test');
 	next();
 })
 
@@ -101,3 +101,7 @@ exports.api = functions.https.onRequest((req, res) => {
 	}
 	return app(req, res)
 });
+
+exports.storageTrigger = functions.storage.object().onFinalize((object) => {
+	return null //for now
+})

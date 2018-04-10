@@ -1,0 +1,35 @@
+2018-04-10T13:48:51.570Z - info: User function triggered, starting execution
+2018-04-10T13:48:51.572Z - info: Server invoked, middleware test
+2018-04-10T13:48:51.590Z - info: Execution took 19 ms, user function completed successfully
+2018-04-10T13:48:51.591Z - error: Error: Unexpected field
+    at makeError (/Users/user/Documents/sendd-it/server/functions/node_modules/multer/lib/make-error.js:12:13)
+    at wrappedFileFilter (/Users/user/Documents/sendd-it/server/functions/node_modules/multer/index.js:40:19)
+    at Busboy.<anonymous> (/Users/user/Documents/sendd-it/server/functions/node_modules/multer/lib/make-middleware.js:114:7)
+    at Busboy.emit (events.js:180:13)
+    at Busboy.emit (/Users/user/Documents/sendd-it/server/functions/node_modules/busboy/lib/main.js:38:33)
+    at PartStream.<anonymous> (/Users/user/Documents/sendd-it/server/functions/node_modules/busboy/lib/types/multipart.js:213:13)
+    at PartStream.emit (events.js:180:13)
+    at HeaderParser.<anonymous> (/Users/user/Documents/sendd-it/server/functions/node_modules/dicer/lib/Dicer.js:51:16)
+    at HeaderParser.emit (events.js:180:13)
+    at HeaderParser._finish (/Users/user/Documents/sendd-it/server/functions/node_modules/dicer/lib/HeaderParser.js:68:8)
+2018-04-10T13:48:51.637Z - info: Worker for api closed due to file changes.
+2018-04-10T13:48:51.666Z - error: Function worker killed by signal: SIGTERM
+2018-04-10T13:49:23.232Z - info: User function triggered, starting execution
+2018-04-10T13:49:23.233Z - info: Server invoked, middleware test
+2018-04-10T13:49:23.250Z - info: Execution took 18 ms, user function completed successfully
+2018-04-10T13:49:23.250Z - error: Error: Unexpected field
+    at makeError (/Users/user/Documents/sendd-it/server/functions/node_modules/multer/lib/make-error.js:12:13)
+    at wrappedFileFilter (/Users/user/Documents/sendd-it/server/functions/node_modules/multer/index.js:40:19)
+    at Busboy.<anonymous> (/Users/user/Documents/sendd-it/server/functions/node_modules/multer/lib/make-middleware.js:114:7)
+    at Busboy.emit (events.js:180:13)
+    at Busboy.emit (/Users/user/Documents/sendd-it/server/functions/node_modules/busboy/lib/main.js:38:33)
+    at PartStream.<anonymous> (/Users/user/Documents/sendd-it/server/functions/node_modules/busboy/lib/types/multipart.js:213:13)
+    at PartStream.emit (events.js:180:13)
+    at HeaderParser.<anonymous> (/Users/user/Documents/sendd-it/server/functions/node_modules/dicer/lib/Dicer.js:51:16)
+    at HeaderParser.emit (events.js:180:13)
+    at HeaderParser._finish (/Users/user/Documents/sendd-it/server/functions/node_modules/dicer/lib/HeaderParser.js:68:8)
+2018-04-10T13:49:28.064Z - info: User function triggered, starting execution
+2018-04-10T13:49:28.065Z - info: Server invoked, middleware test
+2018-04-10T13:49:28.072Z - info: undefined
+2018-04-10T13:49:28.089Z - info: Execution took 28 ms, finished with status: 'crash'
+2018-04-10T13:49:28.108Z - error: Function worker killed by signal: SIGTERM
