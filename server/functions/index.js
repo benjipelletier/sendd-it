@@ -94,14 +94,10 @@ app.post('/tracks', (req, res) => {
 	})
 })
 
-exports.api = functions.https.onRequest((req, res) => {
+exports.api = functions.https.onCall((req, res) => {
 	if (!req.path) {
 		// prepending "/" keeps query params, path params intact
 		req.url = `/${req.url}`
 	}
 	return app(req, res)
 });
-
-exports.storageTrigger = functions.storage.object().onFinalize((object) => {
-	return null //for now
-})
