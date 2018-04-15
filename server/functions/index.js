@@ -90,7 +90,9 @@ app.post('/tracks', (req, res) => {
 	admin.database().ref(`/comments/${key}`).set({status: 'null'})
 	res.send({
 		code: 200,
-		body: {}
+		body: {
+			id: key
+		}
 	})
 })
 
