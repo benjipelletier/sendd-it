@@ -1,46 +1,49 @@
 <template>
-  <div id="Main" v-if="data">
-    <h1>Tracks</h1>
-    <div class="track" v-for="item in data" :key="item.id">
-      <h2>ID: {{ item.id }}</h2>
-      <h2>Name: {{ item.name }}</h2>
-    </div>
+  <div id="Main">
+    <Uploader class="uploader"></Uploader>
   </div>
 </template>
-
 <script>
-import database from '../db'
+import axios from 'axios'
+import Uploader from './Uploader'
+
 export default {
   name: 'Main',
+  components: {
+    Uploader
+  },
   data () {
     return {
-      data: ''
+      url: 'https://us-central1-sendd-it.cloudfunctions.net/api',
+      data: '',
+      title: '',
+      desc: ''
     }
   },
   methods: {
-    readData () {
-      var that = this
-      database.ref('/tracks').once('value').then(function (data) {
-        that.data = data.val()
-      })
+    getTrack (trackID) {
+      axios.get(this.url + '/tracks/' + trackID)
+        .then(function (response) {
+          console.log(response)
+        })
+        .catch(function (error) {
+          console.log(error)
+        })
     }
   },
   created () {
-    this.readData()
   }
 }
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+
 #Main {
   text-align: left;
-  padding: 0 5%;
+  padding: 100px 5%;
 }
-h1 { margin-bottom: 50px; }
-.track {
-  font-size: 0.8em;
-  margin-bottom: 20px;
-  border-bottom: 1px solid #dedede;
+.uploader {
+  max-width: 400px;
+  margin: auto;
 }
 </style>
