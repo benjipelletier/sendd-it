@@ -1,13 +1,18 @@
 const express = require('express')
-const functions = require('firebase-functions')
+const functions = require('firebase-functions');
 const admin = require('firebase-admin');
- 
+const Busboy = require('busboy');
+const fs = require('fs');
+const path = require('path');
+const os = require('os');
+
 const serviceAccount = require("./serviceAccountKey.json")
 
-admin.initializeApp({
-	credential: admin.credential.cert(serviceAccount),
-    storageBucket: "sendd-it.appspot.com"
-});
+try {
+	admin.initializeApp(functions.config().firebase);
+} catch(e) {
+	console.log('!!! Firebase Admin Error');
+}
 
 const app = express();
 
@@ -16,12 +21,27 @@ app.use((req, res, next) => {
 	next();
 })
 
-app.get('/file', (req, res) => {
-	const storageRef = admin.storage().bucket()
-	var message = '5b6p5Y+344GX44G+44GX44Gf77yB44GK44KB44Gn44Go44GG77yB';
-	storageRef.upload('./index.js').then((snap) => {
-		res.send('SUCCESS')
-	  })
+app.post('/file', (req, res) => {
+	const busboy = new Busboy({ headers: req.headers });
+	let tfp = ''
+	busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
+		const tempFilePath = path.join(os.tmpdir(), fieldname);
+		tfp = tempFilePath
+		console.log(`File located from req ` + tempFilePath);
+		const storageRef = admin.storage().bucket() 
+		file.pipe(fs.createWriteStream(tempFilePath))
+		storageRef.upload(tempFilePath).then((snap) => {
+			res.send('SUCCESS')
+		}).catch((err) => {
+			res.send(err)
+		})
+	});
+
+	busboy.on('finish', function() {
+		fs.unlinkSync(tfp)
+	});
+	req.pipe(busboy);
+	busboy.end(req.rawBody);
 })
 
 app.get('/tracks/:id', (req, res) => {
@@ -66,9 +86,9 @@ app.post('/comments/:id', (req, res) => {
 
 		if (snap.val().status) admin.database().ref(`/comments/${req.params.id}/status`).remove();
 		admin.database().ref(`/comments/${req.params.id}/${index}`).set({
-			name: req.query.name || 'default',
-			body: req.query.body || 'default',
-			timestamp: req.query.timestamp || 'default'
+			name: req.body.name || 'default',
+			body: req.body.body || 'default',
+			timestamp: req.body.timestamp || 'default'
 		})
 		res.send({code: 200, body: {}})
 	}).catch((err) => {
@@ -81,9 +101,13 @@ app.post('/comments/:id', (req, res) => {
 
 app.post('/tracks', (req, res) => {
 	const date = new Date()
-	const timestamp = `${date.getMonth()}/${date.getDay()}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}`;
+	const timestamp = `${date.getMonth()}/${date.getDate()}/${date.getFullYear()} ${date.getHours()}:${(date.getMinutes() < 10 ? '0':'')}${date.getMinutes()}`;
+	if (!req.body.title) {
+		res.status(400).send("body.title not defined")
+		return
+	}
 	const key = admin.database().ref('/tracks').push(
-		{title: req.query.title,
+		{title: req.body.title,
 		 timestamp,
 		 passcode: 'XXXX'}
 	).getKey()
@@ -96,7 +120,7 @@ app.post('/tracks', (req, res) => {
 	})
 })
 
-exports.api = functions.https.onCall((req, res) => {
+exports.api = functions.https.onRequest((req, res) => {
 	if (!req.path) {
 		// prepending "/" keeps query params, path params intact
 		req.url = `/${req.url}`
