@@ -3,11 +3,11 @@
 import Vue from 'vue'
 import App from './App'
 import router from './router'
-import firebaseApp from './firebase'
-import database from './db'
+// import firebaseApp from './firebase'
+// import database from './db'
 Vue.config.productionTip = false
-Vue.use(firebaseApp)
-Vue.use(database)
+// Vue.use(firebaseApp)
+// Vue.use(database)
 new Vue({
   el: '#app',
   router,

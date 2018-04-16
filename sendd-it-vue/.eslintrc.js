@@ -29,6 +29,7 @@ module.exports = {
     
     // custom setup
     'no-unused-vars': 'off',
-    'no-new': 'off'
+    'no-new': 'off',
+    'space-before-function-paren': 'off'
   }
 }

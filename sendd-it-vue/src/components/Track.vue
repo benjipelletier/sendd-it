@@ -1,30 +1,33 @@
 <template>
-  <div id="Main">
-    <Uploader class="uploader"></Uploader>
+  <div id="Track">
+    <div v-if="data">
+      <h2>{{ data.title }}</h2>
+      <p>Passcode: {{ data.passcode }}</p>
+      <p>Timestamp: {{ data.timestamp }}</p>
+    </div>
   </div>
 </template>
 <script>
 import axios from 'axios'
-import Uploader from './Uploader'
 
 export default {
-  name: 'Main',
-  components: {
-    Uploader
-  },
+  name: 'Track',
   data () {
     return {
       url: 'https://us-central1-sendd-it.cloudfunctions.net/api',
-      data: '',
-      title: '',
-      desc: ''
+      id: this.$route.params.id,
+      data: ''
     }
   },
   methods: {
     getTrack (trackID) {
+      var _this = this
       axios.get(this.url + '/tracks/' + trackID)
         .then(function (response) {
           console.log(response)
+          if (response.data.code === 200) {
+            _this.data = response.data.body
+          }
         })
         .catch(function (error) {
           console.log(error)
@@ -32,13 +35,14 @@ export default {
     }
   },
   created () {
+    this.getTrack(this.$route.params.id)
   }
 }
 </script>
 
 <style scoped>
 
-#Main {
+#Track {
   text-align: left;
   padding: 100px 5%;
 }
