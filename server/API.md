@@ -75,7 +75,9 @@ or
 ```js
 {
     code: 200,
-    body: {}
+    body: {
+        id: [alphanumeric]
+    }
 }
 ```
 ---
