@@ -29,7 +29,7 @@
         <input type="text" name="title" disabled :value="'https://sendd.it/tracks/' + id">
         <div class="button-wrapper">
           <div class="button white-button">Copy link</div>
-          <div class="button blue-button"><router-link tag="span" :to="'/track/' + id">Visit</router-link></div>
+          <router-link class="button blue-button" tag="div" :to="'/track/' + id">Visit</router-link>
         </div>
       </div>
     </transition>
@@ -134,8 +134,6 @@ h2 {
   font-size: 1.3em;
   font-weight: 600;
 }
-
-
 
 input,
 select,
