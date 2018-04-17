@@ -1,6 +1,5 @@
 .DS_Store
 node_modules/
 keys.json
-<<<<<<< HEAD
-=======
->>>>>>> 8cd66e7bc93b3ca2522d97255ce2a7923781011a
+firebase-debug.log
+serviceAccountKey.json
