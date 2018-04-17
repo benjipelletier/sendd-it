@@ -28,9 +28,18 @@ app.post('/file', (req, res) => {
 		const tempFilePath = path.join(os.tmpdir(), fieldname);
 		tfp = tempFilePath
 		console.log(`File located from req ` + tempFilePath);
-		const storageRef = admin.storage().bucket() 
+		const storageRef = admin.storage().bucket()
 		file.pipe(fs.createWriteStream(tempFilePath))
-		storageRef.upload(tempFilePath).then((snap) => {
+		var options = {
+			destination: filename,
+			metadata: {
+			  	contentType: mimetype,
+			  	metadata: {
+					event: 'test meta'
+				}
+			}
+		}
+		storageRef.upload(tempFilePath, options).then((snap) => {
 			res.send('SUCCESS')
 		}).catch((err) => {
 			res.send(err)
