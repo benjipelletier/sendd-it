@@ -1,0 +1,38 @@
+$blue: #3A76BD;
+$black: #353535;
+.font-bold {
+  font-weight: 500;
+}
+
+.font-light {
+  font-weight: 400;
+}
+
+.font-reg {
+  font-weight: 400;
+}
+
+.font-small {
+  font-size: 0.6em;
+}
+
+.disabled {
+  opacity: 0.5
+}
+
+.blue-button {
+  background: $blue;
+  color: white;
+  &:hover {
+    background-color: #235b9c;
+  }
+}
+
+.white-button {
+  background: white;
+  border: 1px solid #E3E3E3;
+  color: $black;
+  &:hover {
+    background-color: #eaeaea;
+  }
+}

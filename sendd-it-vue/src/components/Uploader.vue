@@ -2,12 +2,14 @@
   <div id="Uploader">
     <transition name="fade">
       <div id="edit" v-if="status==0">
-        <h2><label for="myFile"><u>Upload</u> your audio file</label></h2>
+        <h2 v-if="!file">
+          <label for="myFile"><u>Upload</u> your audio file</label>
+        </h2>
+        <h2 v-else>
+          {{ file.name }}
+          <p class="font-small font-reg"><label for="myFile"><u>Choose another file</u></label></p>
+        </h2>
         <input name="myFile" id="myFile" accept="audio/*" type="file" v-on:change="fileSelected" style="display: none;">
-        <div v-if="file" class="file">
-          <p><b>{{ file.name }}</b></p>
-          <p>Size: {{ parseInt(file.size/1048576) }}mb<br>Type: {{ file.type }}</p>
-        </div>
         <div class="input-group">
           <h2>Title</h2>
           <input type="text" placeholder="" name="title" v-model="title">
@@ -18,7 +20,7 @@
           <span v-if="desc">{{ 200-desc.length }} characters left</span>
         </div>
         <div class="button-wrapper">
-          <div v-if="title" class="button" @click="postTrack(title)">Upload</div>
+          <div v-if="title&&file" class="button" @click="postTrack(title)">Upload</div>
           <div v-else class="button disabled">Upload</div>
         </div>
       </div>
@@ -46,57 +48,68 @@ export default {
       desc: '',
       status: 0,
       id: '',
-      file: ''
+      file: '',
+      queue: ''
+    }
+  },
+  watch: {
+    file: function(newData, oldData) {
+      this.queue.append('file', newData)
     }
   },
   methods: {
     fileSelected(event) {
-      this.file = event.target.files[0]
+      if (event.target.files[0]) {
+        if (this.checkFileSize(event.target.files[0])) {
+          this.file = event.target.files[0]
+          console.log(this.file)
+        } else {
+          this.fileRejected()
+        }
+      }
+    },
+    checkFileSize(file) {
+      return file.size < 50000000
+    },
+    fileRejected() {
+      alert('File size is bigger than 50mb')
     },
     postTrack(title) {
       var _this = this
-      axios.post(this.url + '/tracks', {
-        title: title
+      axios.post(this.url + '/file', this.queue).then(function(response) {
+        if (response.status === 200) {
+          _this.postTrackMeta()
+        } else {
+          alert('upload error')
+        }
+      }).catch(function(error) {
+        console.log(error)
       })
-        .then(function(response) {
-          if (response.data.code === 200) {
-            _this.status = 1
-            _this.id = response.data.body.id
-          } else {
-            _this.status = 3
-          }
-        })
-        .catch(function(error) {
-          console.log(error)
-        })
+    },
+    postTrackMeta() {
+      var _this = this
+      axios.post(this.url + '/tracks', {
+        title: this.title
+      }).then(function(response) {
+        if (response.data.code === 200) {
+          _this.status = 1
+          _this.id = response.data.body.id
+        } else {
+          _this.status = 3
+        }
+      }).catch(function(error) {
+        console.log(error)
+      })
     }
   },
-  created() {}
+  created() {
+    this.queue = new FormData()
+  }
 }
 
 </script>
 <style scoped lang="scss">
-/* To be extracted */
-
-$blue: #3A76BD;
-$black: #353535;
-.font-bold {
-  font-weight: 500;
-}
-
-.font-light {
-  font-weight: 400;
-}
-
-.font-reg {
-  font-weight: 400;
-}
-
-.disabled {
-  opacity: 0.5
-}
-
-/* ------ */
+@import '../styles/style.scss';
 
 /* Animation*/
 
@@ -105,6 +118,7 @@ $black: #353535;
   transition: opacity .3s;
   height: 0;
 }
+
 .fade-enter,
 .fade-leave-to {
   opacity: 0;
@@ -115,12 +129,11 @@ $black: #353535;
   transition: opacity .3s;
   transition-delay: 0.4s;
 }
+
 .fadeIn-enter,
 .fade-leave-to {
   opacity: 0;
 }
-
-/* ------ */
 
 #Uploader {
 
@@ -133,6 +146,9 @@ $black: #353535;
 h2 {
   font-size: 1.3em;
   font-weight: 600;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 input,
@@ -193,36 +209,9 @@ textarea {
     cursor: pointer;
   }
 }
+
 .button:nth-child(2) {
   margin-left: 5px;
-}
-
-.blue-button {
-  background: $blue;
-  color: white;
-  &:hover {
-    background-color: #235b9c;
-  }
-}
-.white-button {
-  background: white;
-  border: 1px solid #E3E3E3;
-  color: $black;
-  &:hover {
-    background-color: #eaeaea;
-  }
-}
-
-.file {
-  background: #f3f3f3;
-  padding: 5px 20px;
-  border-radius: 3px;
-  h3,
-  p {
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
-  }
 }
 
 </style>
