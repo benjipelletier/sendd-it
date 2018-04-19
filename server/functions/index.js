@@ -98,9 +98,7 @@ app.post('/tracks', (req, res) => {
 	handleFileUpload(req, key).then((fileRes) => {
 		const updated = {
 			mimetype: fileRes.mimetype,
-			downloadURL: fileRes.downloadURL
 		}
-		console.log("TESTED " + updated)
 		dbRef.update(updated)
 		res.send({
 			code: 200,
@@ -137,17 +135,21 @@ const handleFileUpload = (req, id) => new Promise((resolve, reject) => {
 		}
 		storageRef.upload(tempFilePath, options).then((snap) => {
 			console.log(`FILE | INFO | finished storage upload - path: ${tempFilePath}`)
-			fs.unlinkSync(tempFilePath)
 			const resObj = {
-				id,
-				mimetype,
-				downloadURL: snap.downloadURL
+				id: id,
+				mimetype: mimetype,
 			}
-			console.log("Ready to call " + resolve)
-			resolve(resObj)
+			fs.unlink(tempFilePath, (err) => {
+				if (err) {
+				  reject(err);
+				} else {
+				  resolve(resObj);
+				}
+			  });
 		}).catch((err) => {
 			fs.unlinkSync(tempFilePath)
 			reject({
+				message: err,
 				error: "Could not upload file"
 			})
 		})
