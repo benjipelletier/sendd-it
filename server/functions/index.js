@@ -10,47 +10,16 @@ const serviceAccount = require("./serviceAccountKey.json")
 
 try {
 	admin.initializeApp(functions.config().firebase);
-} catch(e) {
+} catch (e) {
 	console.log('!!! Firebase Admin Error');
 }
+
 
 const app = express();
 
 app.use((req, res, next) => {
 	console.log('Server invoked, middleware test');
 	next();
-})
-
-app.post('/file', (req, res) => {
-	const busboy = new Busboy({ headers: req.headers });
-	let tfp = ''
-	busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
-		const tempFilePath = path.join(os.tmpdir(), fieldname);
-		tfp = tempFilePath
-		console.log(`File located from req ` + tempFilePath);
-		const storageRef = admin.storage().bucket()
-		file.pipe(fs.createWriteStream(tempFilePath))
-		var options = {
-			destination: filename,
-			metadata: {
-			  	contentType: mimetype,
-			  	metadata: {
-					event: 'test meta'
-				}
-			}
-		}
-		storageRef.upload(tempFilePath, options).then((snap) => {
-			res.send('SUCCESS')
-		}).catch((err) => {
-			res.send(err)
-		})
-	});
-
-	busboy.on('finish', function() {
-		fs.unlinkSync(tfp)
-	});
-	req.pipe(busboy);
-	busboy.end(req.rawBody);
 })
 
 app.get('/tracks/:id', (req, res) => {
@@ -66,7 +35,7 @@ app.get('/tracks/:id', (req, res) => {
 	}).catch((err) => {
 		res.send({
 			code: 404,
-			body: {error: "Not Found"}
+			body: { error: "Not Found" }
 		});
 	})
 })
@@ -84,7 +53,7 @@ app.get('/comments/:id', (req, res) => {
 	}).catch((err) => {
 		res.send({
 			code: 404,
-			body: {error: "Not Found"}
+			body: { error: "Not Found" }
 		});
 	})
 })
@@ -99,34 +68,98 @@ app.post('/comments/:id', (req, res) => {
 			body: req.body.body || 'default',
 			timestamp: req.body.timestamp || 'default'
 		})
-		res.send({code: 200, body: {}})
+		res.send({ code: 200, body: {} })
 	}).catch((err) => {
 		res.send({
 			code: 404,
-			body: {error: "Not Found"}
+			body: { error: "Not Found" }
 		});
 	})
 })
 
 app.post('/tracks', (req, res) => {
 	const date = new Date()
-	const timestamp = `${date.getMonth()}/${date.getDate()}/${date.getFullYear()} ${date.getHours()}:${(date.getMinutes() < 10 ? '0':'')}${date.getMinutes()}`;
-	if (!req.body.title) {
-		res.status(400).send("body.title not defined")
-		return
-	}
-	const key = admin.database().ref('/tracks').push(
-		{title: req.body.title,
-		 timestamp,
-		 passcode: 'XXXX'}
-	).getKey()
-	admin.database().ref(`/comments/${key}`).set({status: 'null'})
-	res.send({
-		code: 200,
-		body: {
-			id: key
+	const timestamp = `${date.getMonth()}/${date.getDate()}/${date.getFullYear()} ${date.getHours()}:${(date.getMinutes() < 10 ? '0' : '')}${date.getMinutes()}`
+	if (!req.query.title) {
+		return res.send({
+			error: "req.query.title not defined"
+		})  
+	} 
+	const dbRef = admin.database().ref('/tracks').push(
+		{
+			title: req.query.title,
+			timestamp,
+			passcode: 'XXXX'
 		}
+	)
+	const key = dbRef.getKey()
+	admin.database().ref(`/comments/${key}`).set({ status: 'null' })
+	console.log(typeof handleFileUpload(req, key))
+	handleFileUpload(req, key).then((fileRes) => {
+		const updated = {
+			mimetype: fileRes.mimetype,
+			downloadURL: fileRes.downloadURL
+		}
+		console.log("TESTED " + updated)
+		dbRef.update(updated)
+		res.send({
+			code: 200,
+			body: {
+				id: key,
+				mimetype: fileRes.mimetype,
+				downloadURL: fileRes.downloadURL
+			}
+		})
+	}).catch((err) => {
+		console.log("TESTED1 ")
+		res.send(err)
 	})
+})
+
+const handleFileUpload = (req, id) => new Promise((resolve, reject) => {
+	console.log('FILE SESSION START')
+	const busboy = new Busboy({ headers: req.headers })
+	let uploadedFile = false;
+	busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
+		console.log(`FILE | INFO | file found - info: ${fieldname} / ${filename}`)
+		uploadedFile = true
+		const tempFilePath = path.join(os.tmpdir(), fieldname);
+		const storageRef = admin.storage().bucket()
+		file.pipe(fs.createWriteStream(tempFilePath))
+		var options = {
+			destination: id,
+			metadata: {
+				contentType: mimetype,
+				metadata: {
+					event: 'test meta'
+				}
+			}
+		}
+		storageRef.upload(tempFilePath, options).then((snap) => {
+			console.log(`FILE | INFO | finished storage upload - path: ${tempFilePath}`)
+			fs.unlinkSync(tempFilePath)
+			const resObj = {
+				id,
+				mimetype,
+				downloadURL: snap.downloadURL
+			}
+			console.log("Ready to call " + resolve)
+			resolve(resObj)
+		}).catch((err) => {
+			fs.unlinkSync(tempFilePath)
+			reject({
+				error: "Could not upload file"
+			})
+		})
+	})
+
+	busboy.on('finish', () => {
+		if (!uploadedFile) reject({
+			error: "No file found"
+		})
+	})
+	req.pipe(busboy)
+	busboy.end(req.rawBody)
 })
 
 exports.api = functions.https.onRequest((req, res) => {
