@@ -83,8 +83,8 @@ app.post('/tracks', (req, res) => {
 	if (!req.query.title) {
 		return res.send({
 			error: "req.query.title not defined"
-		})  
-	} 
+		})
+	}
 	const dbRef = admin.database().ref('/tracks').push(
 		{
 			title: req.query.title,
@@ -94,75 +94,69 @@ app.post('/tracks', (req, res) => {
 	)
 	const key = dbRef.getKey()
 	admin.database().ref(`/comments/${key}`).set({ status: 'null' })
-	console.log(typeof handleFileUpload(req, key))
-	handleFileUpload(req, key).then((fileRes) => {
-		const updated = {
-			mimetype: fileRes.mimetype,
+	res.send({
+		code: 200,
+		body: {
+			id: key
 		}
-		dbRef.update(updated)
-		res.send({
-			code: 200,
-			body: {
-				id: key,
-				mimetype: fileRes.mimetype,
-				downloadURL: fileRes.downloadURL
-			}
-		})
-	}).catch((err) => {
-		console.log("TESTED1 ")
-		res.send(err)
 	})
 })
 
-const handleFileUpload = (req, id) => new Promise((resolve, reject) => {
-	console.log('FILE SESSION START')
-	const busboy = new Busboy({ headers: req.headers })
-	let uploadedFile = false;
-	busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
-		console.log(`FILE | INFO | file found - info: ${fieldname} / ${filename}`)
-		uploadedFile = true
-		const tempFilePath = path.join(os.tmpdir(), fieldname);
-		const storageRef = admin.storage().bucket()
-		file.pipe(fs.createWriteStream(tempFilePath))
-		var options = {
-			destination: id,
-			metadata: {
-				contentType: mimetype,
-				metadata: {
-					event: 'test meta'
-				}
-			}
-		}
-		storageRef.upload(tempFilePath, options).then((snap) => {
-			console.log(`FILE | INFO | finished storage upload - path: ${tempFilePath}`)
-			const resObj = {
-				id: id,
-				mimetype: mimetype,
-			}
-			fs.unlink(tempFilePath, (err) => {
-				if (err) {
-				  reject(err);
-				} else {
-				  resolve(resObj);
-				}
-			  });
-		}).catch((err) => {
-			fs.unlinkSync(tempFilePath)
-			reject({
-				message: err,
-				error: "Could not upload file"
-			})
-		})
-	})
+// const handleFileUpload = (req, id, res) => new Promise((resolve, reject) => {
+// 	console.log('FILE SESSION START')
+// 	const busboy = new Busboy({ headers: req.headers })
+// 	let uploadedFile = false;
+// 	busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
+// 		console.log(`FILE | INFO | file found - info: ${fieldname} / ${filename}`)
+// 		uploadedFile = true
+// 		const tempFilePath = path.join(os.tmpdir(), id);
+// 		const storageRef = admin.storage().bucket()
+// 		//file.pipe(fs.createWriteStream(tempFilePath))
+// 		var options = {
+// 			destination: id,
+// 			metadata: {
+// 				contentType: mimetype,
+// 				metadata: {
+// 					event: 'test meta'
+// 				}
+// 			}
+// 		}
+// 		// storageRef.upload(file, options).then((snap) => {
+// 		// 	console.log(`FILE | INFO | finished storage upload - path: ${tempFilePath}`)
+// 		// 	const resObj = {
+// 		// 		id: id,
+// 		// 		mimetype: mimetype,
+// 		// 	}
+// 		// 	resolve(resObj);
+// 		// }).catch((err) => {
+// 		// 	reject({
+// 		// 		message: err,
+// 		// 		error: "Could not upload file"
+// 		// 	})
+// 		// })
+// 	})
 
-	busboy.on('finish', () => {
-		if (!uploadedFile) reject({
-			error: "No file found"
-		})
-	})
-	req.pipe(busboy)
-	busboy.end(req.rawBody)
-})
+// 	busboy.on('finish', () => {
+// 		if (!uploadedFile) reject({
+// 			error: "No file found"
+// 		})
+// 	})
+// 	const storageRef = admin.storage().bucket()
+// 	storageRef.upload(req.rawBody, options).then((snap) => {
+// 		console.log(`FILE | INFO | finished storage upload - path: ${tempFilePath}`)
+// 		const resObj = {
+// 			id: id,
+// 			mimetype: mimetype,
+// 		}
+// 		resolve(resObj);
+// 	}).catch((err) => {
+// 		reject({
+// 			message: err,
+// 			error: "Could not upload file"
+// 		})
+// 	})
+// 	//busboy.end(req.rawBody)
+// })
 
 exports.api = functions.https.onRequest((req, res) => {
 	if (!req.path) {
