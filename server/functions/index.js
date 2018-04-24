@@ -165,3 +165,12 @@ exports.api = functions.https.onRequest((req, res) => {
 	}
 	return app(req, res)
 });
+
+exports.updateMeta = functions.storage.object().onMetadataUpdate((object) => {
+	const key = object.name;
+	const meta = object.metadata
+	admin.database().ref(`/tracks/${key}`).update(meta)
+	console.log(`Storage meta update trigger: ${key}`)
+	return 0
+  });
+
