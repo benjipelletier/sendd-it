@@ -68,6 +68,9 @@ app.post('/comments/:id', (req, res) => {
 			body: req.body.body || 'default',
 			timestamp: req.body.timestamp || 'default'
 		})
+		admin.database().ref(`/tracks/${req.params.id}`).update({
+			commentsAmt: index + 1
+		})
 		res.send({ code: 200, body: {} })
 	}).catch((err) => {
 		res.send({
@@ -89,7 +92,8 @@ app.post('/tracks', (req, res) => {
 		{
 			title: req.query.title,
 			timestamp,
-			passcode: 'XXXX'
+			passcode: 'XXXX',
+			commentsAmt: 0
 		}
 	)
 	const key = dbRef.getKey()
@@ -102,62 +106,6 @@ app.post('/tracks', (req, res) => {
 	})
 })
 
-// const handleFileUpload = (req, id, res) => new Promise((resolve, reject) => {
-// 	console.log('FILE SESSION START')
-// 	const busboy = new Busboy({ headers: req.headers })
-// 	let uploadedFile = false;
-// 	busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
-// 		console.log(`FILE | INFO | file found - info: ${fieldname} / ${filename}`)
-// 		uploadedFile = true
-// 		const tempFilePath = path.join(os.tmpdir(), id);
-// 		const storageRef = admin.storage().bucket()
-// 		//file.pipe(fs.createWriteStream(tempFilePath))
-// 		var options = {
-// 			destination: id,
-// 			metadata: {
-// 				contentType: mimetype,
-// 				metadata: {
-// 					event: 'test meta'
-// 				}
-// 			}
-// 		}
-// 		// storageRef.upload(file, options).then((snap) => {
-// 		// 	console.log(`FILE | INFO | finished storage upload - path: ${tempFilePath}`)
-// 		// 	const resObj = {
-// 		// 		id: id,
-// 		// 		mimetype: mimetype,
-// 		// 	}
-// 		// 	resolve(resObj);
-// 		// }).catch((err) => {
-// 		// 	reject({
-// 		// 		message: err,
-// 		// 		error: "Could not upload file"
-// 		// 	})
-// 		// })
-// 	})
-
-// 	busboy.on('finish', () => {
-// 		if (!uploadedFile) reject({
-// 			error: "No file found"
-// 		})
-// 	})
-// 	const storageRef = admin.storage().bucket()
-// 	storageRef.upload(req.rawBody, options).then((snap) => {
-// 		console.log(`FILE | INFO | finished storage upload - path: ${tempFilePath}`)
-// 		const resObj = {
-// 			id: id,
-// 			mimetype: mimetype,
-// 		}
-// 		resolve(resObj);
-// 	}).catch((err) => {
-// 		reject({
-// 			message: err,
-// 			error: "Could not upload file"
-// 		})
-// 	})
-// 	//busboy.end(req.rawBody)
-// })
-
 exports.api = functions.https.onRequest((req, res) => {
 	if (!req.path) {
 		// prepending "/" keeps query params, path params intact
@@ -166,11 +114,25 @@ exports.api = functions.https.onRequest((req, res) => {
 	return app(req, res)
 });
 
-exports.updateMeta = functions.storage.object().onMetadataUpdate((object) => {
-	const key = object.name;
-	const meta = object.metadata
-	admin.database().ref(`/tracks/${key}`).update(meta)
+exports.onStorageMetaUpdate = functions.storage.object().onMetadataUpdate((object) => {
+	const key = object.name
 	console.log(`Storage meta update trigger: ${key}`)
+	updateMetadata(key, object.metadata)
 	return 0
-  });
+});
 
+exports.onStoragePost = functions.storage.object().onFinalize((object) => {
+	const key = object.name
+	console.log(`Storage POST trigger: ${key}`)
+	updateMetadata(key, object.metadata)
+	return 0
+});
+
+const updateMetadata = (key, meta) => {
+	try {
+		const ref = admin.database().ref().child('tracks').child(key)
+		ref.update(meta)
+	} catch(err) {
+		console.log(`Update Meta error: key '${key} not found in database'`)
+	}
+}
