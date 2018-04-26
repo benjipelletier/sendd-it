@@ -1,10 +1,6 @@
 const express = require('express')
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
-const Busboy = require('busboy');
-const fs = require('fs');
-const path = require('path');
-const os = require('os');
 
 const serviceAccount = require("./serviceAccountKey.json")
 
@@ -132,7 +128,7 @@ const updateMetadata = (key, meta) => {
 	try {
 		const ref = admin.database().ref().child('tracks').child(key)
 		ref.update(meta)
-	} catch(err) {
+	} catch (err) {
 		console.log(`Update Meta error: key '${key} not found in database'`)
 	}
 }
