@@ -1,6 +1,8 @@
 const express = require('express')
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
+const namegen = require('./name-gen/namegen')
+const bodyParser = require('body-parser')
 
 const serviceAccount = require("./serviceAccountKey.json")
 
@@ -13,8 +15,12 @@ try {
 
 const app = express();
 
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({extended: true}))
+
 app.use((req, res, next) => {
 	console.log('Server invoked, middleware test');
+	console.log('Comment name test: ' + namegen.genNames()[0])
 	next();
 })
 
@@ -79,14 +85,14 @@ app.post('/comments/:id', (req, res) => {
 app.post('/tracks', (req, res) => {
 	const date = new Date()
 	const timestamp = `${date.getMonth()}/${date.getDate()}/${date.getFullYear()} ${date.getHours()}:${(date.getMinutes() < 10 ? '0' : '')}${date.getMinutes()}`
-	if (!req.query.title) {
+	if (!req.body.title) {
 		return res.send({
-			error: "req.query.title not defined"
+			error: "req.body.title not defined"
 		})
 	}
 	const dbRef = admin.database().ref('/tracks').push(
 		{
-			title: req.query.title,
+			title: req.body.title,
 			timestamp,
 			passcode: 'XXXX',
 			commentsAmt: 0
