@@ -3,6 +3,8 @@ const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const namegen = require('./name-gen/namegen')
 const bodyParser = require('body-parser')
+const NodeRSA = require('node-rsa')
+const rsaKeys = require('./rsa-keys.json')
 
 const serviceAccount = require("./serviceAccountKey.json")
 
@@ -16,7 +18,7 @@ try {
 const app = express();
 
 app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({extended: true}))
+app.use(bodyParser.urlencoded({ extended: true }))
 
 app.use((req, res, next) => {
 	console.log('Server invoked, middleware test');
@@ -90,23 +92,40 @@ app.post('/tracks', (req, res) => {
 			error: "req.body.title not defined"
 		})
 	}
+	console.log(encryptPass(req.body.pass).length)
+	const pass = req.body.pass ? encryptPass(req.body.pass) : "null"
 	const dbRef = admin.database().ref('/tracks').push(
 		{
 			title: req.body.title,
 			timestamp,
-			passcode: 'XXXX',
+			passcode: pass,
 			commentsAmt: 0
 		}
 	)
 	const key = dbRef.getKey()
+	console.log("pass: " + decryptPass("ZSPSbEiBtbLTtBVn+HndMwHbxF3r11lh5JaeiHwnx1lUZ0bc1nKfqNz6eGPoF/gfnhMA2nOZSWwAMeJCqhBjCA=="))
 	admin.database().ref(`/comments/${key}`).set({ status: 'null' })
-	res.send({
+	return res.send({
 		code: 200,
 		body: {
 			id: key
 		}
 	})
 })
+
+function encryptPass(pass) {
+	const key = new NodeRSA(rsaKeys.private)
+	return key.encrypt(pass, 'base64')
+}
+
+function decryptPass(ePass) {
+	const key = new NodeRSA(rsaKeys.private)
+	return key.decrypt(ePass)
+}
+
+function checkPass(input, dbPass) {
+	return !dbPass || (input === decryptPass(dbPass))
+}
 
 exports.api = functions.https.onRequest((req, res) => {
 	if (!req.path) {
