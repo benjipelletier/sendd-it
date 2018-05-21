@@ -7,6 +7,7 @@ const keys = JSON.stringify({
     public: key.$cache['pkcs8-public-pem'],
     private: key.$cache['pkcs1-private-pem']
 })
+
 fs.writeFile('./functions/rsa-keys.json', keys, (err) => {
     if (err) throw err
     console.log('Success')

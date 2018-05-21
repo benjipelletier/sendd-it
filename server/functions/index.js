@@ -3,8 +3,7 @@ const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const namegen = require('./name-gen/namegen')
 const bodyParser = require('body-parser')
-const NodeRSA = require('node-rsa')
-const rsaKeys = require('./rsa-keys.json')
+const { encryptPass, decryptPass, checkPass } = require('./utils/encrypt')
 
 const serviceAccount = require("./serviceAccountKey.json")
 
@@ -13,7 +12,6 @@ try {
 } catch (e) {
 	console.log('!!! Firebase Admin Error');
 }
-
 
 const app = express();
 
@@ -44,6 +42,7 @@ app.get('/tracks/:id', (req, res) => {
 	})
 })
 
+// GET comments
 app.get('/comments/:id', (req, res) => {
 	admin.database().ref(`/comments/${req.params.id}`).once('value').then((snap) => {
 		if (snap.val()) {
@@ -62,6 +61,7 @@ app.get('/comments/:id', (req, res) => {
 	})
 })
 
+// POST comments
 app.post('/comments/:id', (req, res) => {
 	admin.database().ref(`/comments/${req.params.id}`).once('value').then((snap) => {
 		var index = (snap.val().status === "null") ? 0 : snap.numChildren()
@@ -84,6 +84,7 @@ app.post('/comments/:id', (req, res) => {
 	})
 })
 
+// POST track
 app.post('/tracks', (req, res) => {
 	const date = new Date()
 	const timestamp = `${date.getMonth()}/${date.getDate()}/${date.getFullYear()} ${date.getHours()}:${(date.getMinutes() < 10 ? '0' : '')}${date.getMinutes()}`
@@ -112,20 +113,6 @@ app.post('/tracks', (req, res) => {
 		}
 	})
 })
-
-function encryptPass(pass) {
-	const key = new NodeRSA(rsaKeys.private)
-	return key.encrypt(pass, 'base64')
-}
-
-function decryptPass(ePass) {
-	const key = new NodeRSA(rsaKeys.private)
-	return key.decrypt(ePass)
-}
-
-function checkPass(input, dbPass) {
-	return !dbPass || (input === decryptPass(dbPass))
-}
 
 exports.api = functions.https.onRequest((req, res) => {
 	if (!req.path) {
