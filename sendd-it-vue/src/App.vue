@@ -1,21 +1,43 @@
 <template>
   <div id="app">
-    <router-view/>
+    <Navbar></Navbar>
+    <div class="components">
+      <router-view/>
+    </div>
   </div>
 </template>
-
 <script>
+import Navbar from './components/Navbar'
 export default {
-  name: 'App'
+  name: 'App',
+  components: {
+    Navbar
+  }
 }
-</script>
 
+</script>
 <style>
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
 #app {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: #353535;
 }
-* { box-sizing: border-box; }
+
+.components {
+  max-width: 1200px;
+  margin: auto;
+  padding: 20px 30px;
+}
+
 </style>

@@ -1,17 +1,12 @@
 <template>
   <div id="Main">
-    <Uploader class="uploader"></Uploader>
   </div>
 </template>
 <script>
 import axios from 'axios'
-import Uploader from './Uploader'
 
 export default {
   name: 'Main',
-  components: {
-    Uploader
-  },
   data () {
     return {
       url: 'https://us-central1-sendd-it.cloudfunctions.net/api',
@@ -21,10 +16,10 @@ export default {
     }
   },
   methods: {
-    getTrack (trackID) {
+    getTrack(trackID) {
       axios.get(this.url + '/tracks/' + trackID)
-        .then(function (response) {
-          console.log(response)
+        .then(res => {
+          console.log(res)
         })
         .catch(function (error) {
           console.log(error)
