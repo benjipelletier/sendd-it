@@ -1,0 +1,29 @@
+@import "./colors.scss";
+
+.button {
+  transition: 0.2s;
+  padding: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.blue-button {
+  background: $blue;
+  color: white;
+
+  &:hover {
+    background-color: $dark-blue;
+  }
+}
+
+.white-button {
+  @extend .button;
+  background: white;
+  border: 1px solid $blue;
+  color: $black;
+  color: $blue;
+
+  &:hover {
+    opacity: 0.7;
+  }
+}

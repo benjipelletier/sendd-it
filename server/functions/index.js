@@ -1,6 +1,9 @@
 const express = require('express')
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
+const namegen = require('./name-gen/namegen')
+const bodyParser = require('body-parser')
+const { encryptPass, decryptPass, checkPass } = require('./utils/encrypt')
 
 const serviceAccount = require("./serviceAccountKey.json")
 
@@ -10,11 +13,14 @@ try {
 	console.log('!!! Firebase Admin Error');
 }
 
-
 const app = express();
+
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: true }))
 
 app.use((req, res, next) => {
 	console.log('Server invoked, middleware test');
+	console.log('Comment name test: ' + namegen.genNames()[0])
 	next();
 })
 
@@ -36,6 +42,7 @@ app.get('/tracks/:id', (req, res) => {
 	})
 })
 
+// GET comments
 app.get('/comments/:id', (req, res) => {
 	admin.database().ref(`/comments/${req.params.id}`).once('value').then((snap) => {
 		if (snap.val()) {
@@ -54,6 +61,7 @@ app.get('/comments/:id', (req, res) => {
 	})
 })
 
+// POST comments
 app.post('/comments/:id', (req, res) => {
 	admin.database().ref(`/comments/${req.params.id}`).once('value').then((snap) => {
 		var index = (snap.val().status === "null") ? 0 : snap.numChildren()
@@ -76,25 +84,29 @@ app.post('/comments/:id', (req, res) => {
 	})
 })
 
+// POST track
 app.post('/tracks', (req, res) => {
 	const date = new Date()
 	const timestamp = `${date.getMonth()}/${date.getDate()}/${date.getFullYear()} ${date.getHours()}:${(date.getMinutes() < 10 ? '0' : '')}${date.getMinutes()}`
-	if (!req.query.title) {
+	if (!req.body.title) {
 		return res.send({
-			error: "req.query.title not defined"
+			error: "req.body.title not defined"
 		})
 	}
+	console.log(encryptPass(req.body.pass).length)
+	const pass = req.body.pass ? encryptPass(req.body.pass) : "null"
 	const dbRef = admin.database().ref('/tracks').push(
 		{
-			title: req.query.title,
+			title: req.body.title,
 			timestamp,
-			passcode: 'XXXX',
+			passcode: pass,
 			commentsAmt: 0
 		}
 	)
 	const key = dbRef.getKey()
+	console.log("pass: " + decryptPass("ZSPSbEiBtbLTtBVn+HndMwHbxF3r11lh5JaeiHwnx1lUZ0bc1nKfqNz6eGPoF/gfnhMA2nOZSWwAMeJCqhBjCA=="))
 	admin.database().ref(`/comments/${key}`).set({ status: 'null' })
-	res.send({
+	return res.send({
 		code: 200,
 		body: {
 			id: key
