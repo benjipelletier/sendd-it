@@ -3,4 +3,5 @@ node_modules/
 keys.json
 firebase-debug.log
 serviceAccountKey.json
+.vscode
 server/functions/rsa-keys.json

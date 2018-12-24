@@ -1,5 +1,7 @@
-$blue: #3A76BD;
-$black: #353535;
+@import "./colors.scss";
+@import "./buttons.scss";
+// @import "./animate.css";
+
 .font-bold {
   font-weight: 500;
 }
@@ -20,19 +22,98 @@ $black: #353535;
   opacity: 0.5
 }
 
-.blue-button {
-  background: $blue;
-  color: white;
-  &:hover {
-    background-color: #235b9c;
+
+.head {
+  margin-bottom: 50px;
+
+  h1 {
+    font-size: 2em;
+    font-weight: 500;
+    border-bottom: 1px solid #CDCDCD;
+    padding-bottom: 10px;
+    margin-bottom: 5px;
+  }
+
+  p {
+    font-size: 1.1em;
+    margin-top: 0;
+    font-weight: 300;
   }
 }
 
-.white-button {
-  background: white;
-  border: 1px solid #E3E3E3;
-  color: $black;
-  &:hover {
-    background-color: #eaeaea;
+.container {
+  // display: flex;
+
+  .sm {
+    width: 40%;
+  }
+
+  .md {
+    width: 50%;
+  }
+
+  .lg {
+    width: 60%;
+  }
+
+  .component:first-child {
+    margin-right: 35px;
+  }
+
+  .component {
+    border-radius: 3px;
+    padding: 20px 20px;
+    border: 1px solid #D5D5D5;
+
+    /*box-shadow: 0 0 10px 0 #E2E2E2;*/
+    h2 {
+      color: #A0A0A0;
+      font-weight: 500;
+      font-size: 1em;
+    }
+  }
+
+  input,
+  select,
+  textarea {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border-radius: 3px;
+    width: 100%;
+    font-size: 1em;
+    font-weight: 400;
+    border: 1px solid #D5D5D5;
+    /*box-shadow: 0 0 10px 0 #E2E2E2;*/
+    /*line-height: 1.5;*/
+    padding: 10px 15px;
+    outline: none;
+    height: auto;
+    resize: none;
+    margin-bottom: 10px;
+
+    &:focus {
+      outline: none;
+    }
+  }
+}
+
+
+@media all and (max-width: 1199px) {}
+
+@media all and (max-width: 991px) {}
+
+@media all and (max-width: 768px) {}
+
+@media all and (max-width: 575px) {
+  .container {
+    display: block;
+
+    .sm,
+    .md,
+    .lg {
+      width: 100%;
+      margin-bottom: 15px;
+    }
   }
 }

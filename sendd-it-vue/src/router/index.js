@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import Main from '@/components/Main'
+import UploadMain from '@/components/upload/Main'
 import Track from '@/components/Track'
 
 Vue.use(Router)
@@ -13,6 +14,12 @@ const router = new Router({
       name: 'Main',
       component: Main,
       meta: { title: 'Sendd.it' }
+    },
+    {
+      path: '/upload',
+      name: 'UploadMain',
+      component: UploadMain,
+      meta: { title: 'Upload track - Sendd.it' }
     },
     {
       path: '/track/:id',

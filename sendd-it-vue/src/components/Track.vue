@@ -8,40 +8,40 @@
   </div>
 </template>
 <script>
-import axios from 'axios'
+import axios from "axios";
 
 export default {
-  name: 'Track',
-  data () {
+  name: "Track",
+  data() {
     return {
-      url: 'https://us-central1-sendd-it.cloudfunctions.net/api',
+      url: "https://us-central1-sendd-it.cloudfunctions.net/api",
       id: this.$route.params.id,
-      data: ''
-    }
+      data: ""
+    };
   },
   methods: {
-    getTrack (trackID) {
-      var _this = this
-      axios.get(this.url + '/tracks/' + trackID)
-        .then(function (response) {
-          console.log(response)
-          if (response.data.code === 200) {
-            _this.data = response.data.body
+    getTrack(trackID) {
+      var _this = this;
+      axios
+        .get(this.url + "/tracks/" + trackID)
+        .then(res => {
+          console.log(res);
+          if (res.data.code === 200) {
+            this.data = res.data.body;
           }
         })
-        .catch(function (error) {
-          console.log(error)
-        })
+        .catch(function(error) {
+          console.log(error);
+        });
     }
   },
-  created () {
-    this.getTrack(this.$route.params.id)
+  created() {
+    this.getTrack(this.$route.params.id);
   }
-}
+};
 </script>
 
 <style scoped>
-
 #Track {
   text-align: left;
   padding: 100px 5%;
