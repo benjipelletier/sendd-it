@@ -5,13 +5,15 @@ const namegen = require('./name-gen/namegen')
 const bodyParser = require('body-parser')
 const { encryptPass, decryptPass, checkPass } = require('./utils/encrypt')
 
-const serviceAccount = require("./serviceAccountKey.json")
-
 try {
 	admin.initializeApp(functions.config().firebase);
+	
 } catch (e) {
 	console.log('!!! Firebase Admin Error');
 }
+
+const db = admin.firestore();
+const FieldValue = admin.firestore.FieldValue;
 
 const app = express();
 
@@ -39,20 +41,22 @@ app.get('/tracks/:id', (req, res) => {
 			code: 404,
 			body: { error: "Not Found" }
 		});
+		// make password error code / requirement
 	})
 })
 
 // GET comments
-app.get('/comments/:id', (req, res) => {
-	admin.database().ref(`/comments/${req.params.id}`).once('value').then((snap) => {
-		if (snap.val()) {
-			res.send({
-				code: 200,
-				body: snap.val()
-			})
-		} else {
-			throw new Error()
-		}
+app.get('/tracks/:id/comments', (req, res) => {
+	db.collection(`tracks/${req.params.id}/comments`)
+	  .orderBy('timestamp', 'desc').get().then(snapshot => {
+		let comments = []
+		snapshot.forEach(doc => {
+			comments.push(doc.data());
+		  });
+		return res.send({
+			code: 200,
+			body: comments
+		})
 	}).catch((err) => {
 		res.send({
 			code: 404,
@@ -61,56 +65,46 @@ app.get('/comments/:id', (req, res) => {
 	})
 })
 
-// POST comments
-app.post('/comments/:id', (req, res) => {
-	admin.database().ref(`/comments/${req.params.id}`).once('value').then((snap) => {
-		var index = (snap.val().status === "null") ? 0 : snap.numChildren()
-
-		if (snap.val().status) admin.database().ref(`/comments/${req.params.id}/status`).remove();
-		admin.database().ref(`/comments/${req.params.id}/${index}`).set({
-			name: req.body.name || 'default',
-			body: req.body.body || 'default',
-			timestamp: req.body.timestamp || 'default'
-		})
-		admin.database().ref(`/tracks/${req.params.id}`).update({
-			commentsAmt: index + 1
-		})
-		res.send({ code: 200, body: {} })
+// POST comments updated
+app.post('/tracks/:id/comments', (req, res) => {
+	db.collection(`tracks/${req.params.id}/comments`).add({
+		name: namegen.genNames()[0] || null,
+		body: req.body.body || null,
+		timestamp: FieldValue.serverTimestamp()
+	}).then(ref => {
+		return res.send({ code: 200, body: {
+			id: ref.id
+		}});
 	}).catch((err) => {
 		res.send({
 			code: 404,
-			body: { error: "Not Found" }
+			error: "Not Found"
 		});
 	})
 })
 
-// POST track
+// POST track updated
 app.post('/tracks', (req, res) => {
 	const date = new Date()
-	const timestamp = `${date.getMonth()}/${date.getDate()}/${date.getFullYear()} ${date.getHours()}:${(date.getMinutes() < 10 ? '0' : '')}${date.getMinutes()}`
 	if (!req.body.title) {
 		return res.send({
+			code: 400,
 			error: "req.body.title not defined"
 		})
 	}
-	console.log(encryptPass(req.body.pass).length)
-	const pass = req.body.pass ? encryptPass(req.body.pass) : "null"
-	const dbRef = admin.database().ref('/tracks').push(
-		{
-			title: req.body.title,
-			timestamp,
-			passcode: pass,
-			commentsAmt: 0
-		}
-	)
-	const key = dbRef.getKey()
-	console.log("pass: " + decryptPass("ZSPSbEiBtbLTtBVn+HndMwHbxF3r11lh5JaeiHwnx1lUZ0bc1nKfqNz6eGPoF/gfnhMA2nOZSWwAMeJCqhBjCA=="))
-	admin.database().ref(`/comments/${key}`).set({ status: 'null' })
-	return res.send({
-		code: 200,
-		body: {
-			id: key
-		}
+	const pass = req.body.pass ? encryptPass(req.body.pass) : null;
+	db.collection('tracks').add({
+		title: req.body.title,
+		timestamp: FieldValue.serverTimestamp(),
+		passcode: pass,
+	}).then(ref => {
+		console.log('Added document with ID: ', ref.id);
+		return res.send({
+			code: 200,
+			body: {
+				id: ref.id
+			}
+		})
 	})
 })
 
