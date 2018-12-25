@@ -26,12 +26,13 @@ app.use((req, res, next) => {
 	next();
 })
 
+ // GET Track updated
 app.get('/tracks/:id', (req, res) => {
-	admin.database().ref(`/tracks/${req.params.id}`).once('value').then((snap) => {
-		if (snap.val()) {
-			res.send({
+	db.doc(`tracks/${req.params.id}`).get().then(doc => {
+		if (doc.exists) {
+			return res.send({
 				code: 200,
-				body: snap.val()
+				body: doc.data()
 			})
 		} else {
 			throw new Error()
@@ -45,7 +46,7 @@ app.get('/tracks/:id', (req, res) => {
 	})
 })
 
-// GET comments
+// GET comments updated
 app.get('/tracks/:id/comments', (req, res) => {
 	db.collection(`tracks/${req.params.id}/comments`)
 	  .orderBy('timestamp', 'desc').get().then(snapshot => {
