@@ -5,13 +5,7 @@ const namegen = require('./name-gen/namegen')
 const bodyParser = require('body-parser')
 const { encryptPass, decryptPass, checkPass } = require('./utils/encrypt')
 
-try {
-	admin.initializeApp(functions.config().firebase);
-	
-} catch (e) {
-	console.log('!!! Firebase Admin Error');
-}
-
+admin.initializeApp(functions.config().firebase);
 const db = admin.firestore();
 const FieldValue = admin.firestore.FieldValue;
 
@@ -22,7 +16,9 @@ app.use(bodyParser.urlencoded({ extended: true }))
 
 app.use((req, res, next) => {
 	console.log('Server invoked, middleware test');
-	console.log('Comment name test: ' + namegen.genNames()[0])
+
+	const settings = {timestampsInSnapshots: true};
+	db.settings(settings);
 	next();
 })
 
@@ -30,23 +26,31 @@ app.use((req, res, next) => {
 app.get('/tracks/:id', (req, res) => {
 	db.doc(`tracks/${req.params.id}`).get().then(doc => {
 		if (doc.exists) {
-			return res.send({
-				code: 200,
-				body: doc.data()
-			})
+			if (checkPass(req.body.pass, doc.data().passcode)) {
+				return res.send({
+					code: 200,
+					body: doc.data()
+				})
+			} else throw {status: 401}
 		} else {
 			throw new Error()
 		}
 	}).catch((err) => {
-		res.send({
+		if (err.status == 401) {
+			return res.send({
+				code: 401,
+				body: { error: "Not Authorized" }
+			});
+		}
+		return res.send({
 			code: 404,
 			body: { error: "Not Found" }
 		});
-		// make password error code / requirement
 	})
 })
 
 // GET comments updated
+// TODO: limit comments returned / socket.io?
 app.get('/tracks/:id/comments', (req, res) => {
 	db.collection(`tracks/${req.params.id}/comments`)
 	  .orderBy('timestamp', 'desc').get().then(snapshot => {
@@ -85,19 +89,20 @@ app.post('/tracks/:id/comments', (req, res) => {
 })
 
 // POST track updated
+// TODO: add creator information
 app.post('/tracks', (req, res) => {
 	const date = new Date()
 	if (!req.body.title) {
 		return res.send({
 			code: 400,
-			error: "req.body.title not defined"
+			error: "Bad Request: information missing"
 		})
 	}
 	const pass = req.body.pass ? encryptPass(req.body.pass) : null;
 	db.collection('tracks').add({
 		title: req.body.title,
 		timestamp: FieldValue.serverTimestamp(),
-		passcode: pass,
+		passcode: pass
 	}).then(ref => {
 		console.log('Added document with ID: ', ref.id);
 		return res.send({
@@ -120,22 +125,24 @@ exports.api = functions.https.onRequest((req, res) => {
 exports.onStorageMetaUpdate = functions.storage.object().onMetadataUpdate((object) => {
 	const key = object.name
 	console.log(`Storage meta update trigger: ${key}`)
-	updateMetadata(key, object.metadata)
+	updateFileUrl(key, object.metadata)
 	return 0
 });
 
 exports.onStoragePost = functions.storage.object().onFinalize((object) => {
 	const key = object.name
 	console.log(`Storage POST trigger: ${key}`)
-	updateMetadata(key, object.metadata)
+	updateFileUrl(key, object.metadata)
 	return 0
 });
 
-const updateMetadata = (key, meta) => {
-	try {
-		const ref = admin.database().ref().child('tracks').child(key)
-		ref.update(meta)
-	} catch (err) {
+const updateFileUrl = (key, meta) => {
+	const ref = db.collection('tracks').doc(key);
+	ref.update({
+		token: meta.firebaseStorageDownloadTokens
+	}).then(() => {
+		console.log('Successfully update meta')
+	}).catch(err => {
 		console.log(`Update Meta error: key '${key} not found in database'`)
-	}
+	})
 }
